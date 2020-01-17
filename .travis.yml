@@ -1,13 +1,27 @@
+
+sudo: required
 language: java
 
-# 27-Sep-2017, tatu: Older versions should compile with Java 6; but with 3.x as master
-#   only Java 8 and beyond work
 jdk:
   - openjdk8
-  - openjdk11
 
-# whitelist
-branches:
-  only:
-    - master
-    - "3.0"
+script:
+  - mvn clean compile assembly:single
+
+before_deploy:
+    - mkdir MiningBuild
+    - find . -name '*.jar' -exec cp {} ./MiningBuild \;
+    - cd /home/travis/build/build-test-conflicts/jackson-jr/MiningBuild
+    - tar -zcvf result.tar.gz *
+deploy:
+  provider: releases
+  api_key:
+    secure: $GITHUB_TOKEN
+  file: result.tar.gz
+  name: fetchjar-615918efa561f2dc1007523d3dd7caa02c340c8c
+  file_glob: true
+  overwrite: true
+  skip_cleanup: true
+  on:
+    all_branches: true 
+            
